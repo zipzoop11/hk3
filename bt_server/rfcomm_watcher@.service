@@ -1,0 +1,11 @@
+[Unit]
+Description=RFCOMM Watcher
+
+[Service]
+User=root
+WorkingDirectory=/root
+ExecStart=rfcomm watch %I
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

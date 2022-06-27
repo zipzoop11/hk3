@@ -1,0 +1,5 @@
+venv/
+.idea
+hunter/.idea/
+__pycache__
+*.pyc
