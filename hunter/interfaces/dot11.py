@@ -94,14 +94,17 @@ class dot11intf:
 
 				if intersect:
 
-					pkt_fields = {
-						'channel': pkt['RadioTap'].ChannelFrequency,
-						'rssi': pkt['RadioTap'].dBm_AntSignal,
-						'bssid': pkt['Dot11Elt'].info.decode('utf-8'),
-						'fcs': pkt.fcs
+					output_event = {
+						'type': 'HIT',
+						'body': {
+							'channel': pkt['RadioTap'].ChannelFrequency,
+							'rssi': pkt['RadioTap'].dBm_AntSignal,
+							'bssid': pkt['Dot11Elt'].info.decode('utf-8'),
+							'fcs': pkt.fcs
+						}
 					}
 
-					self.pkt_buffer.put(pkt_fields)
+					self.pkt_buffer.put(output_event)
 		else:
 			pass
 
