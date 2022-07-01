@@ -2,6 +2,7 @@ import time
 import threading
 import os
 import serial
+from serial.serialutil import SerialException
 
 
 class bt_server:
@@ -40,7 +41,9 @@ class bt_server:
             time.sleep(0.1)
             try:
                 pkt = self.rfcomm_socket.readline()
-            except serial.SerialException:
+            except SerialException as e:
+                print("[bt_sever]self.rfcomm_socket.readline exception: {}".format(e))
+                self.rfcomm_socket.close()
                 self.connected = False
                 pkt = None
 
@@ -52,12 +55,6 @@ class bt_server:
                 self.pipe.send(msg)
 
     def connect(self):
-        if self.rfcomm_socket:
-            try:
-                self.rfcomm_socket.close()
-            except serial.SerialException:
-                print("Couldn't close socket!")
-
         if os.path.exists(self.rfcomm_dev):
             try:
                 self.rfcomm_socket = serial.Serial(self.rfcomm_dev, 9600, timeout=10)
