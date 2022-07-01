@@ -42,7 +42,12 @@ class bt_server:
             try:
                 pkt = self.rfcomm_socket.readline()
             except SerialException as e:
-                print("[bt_sever]self.rfcomm_socket.readline exception: {}".format(e))
+                print("[bt_sever][SerialException]self.rfcomm_socket.readline exception: {}".format(e))
+                self.rfcomm_socket.close()
+                self.connected = False
+                pkt = None
+            except TypeError as e:
+                print(print("[bt_sever][TypeError]self.rfcomm_socket.readline exception: {}".format(e)))
                 self.rfcomm_socket.close()
                 self.connected = False
                 pkt = None
@@ -79,6 +84,7 @@ class bt_server:
     def stop(self):
         print("Caught stop")
         self.connected = False
+        self.rfcomm_socket.close()
 
 
 
