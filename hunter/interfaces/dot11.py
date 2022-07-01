@@ -88,7 +88,7 @@ class dot11intf:
 	def packet_handler(self, pkt):
 		time.sleep(0.01)
 		if not self.pkt_buffer.full():
-			if (pkt.haslayer(Dot11FCS) or pkt.haslayer(Dot11)) and pkt.subtype in self.subtype_filter:
+			if pkt.subtype in self.subtype_filter and pkt.type == 0:
 				addr_bytes = raw(pkt)[36:54]
 				intersect = set([addr_bytes[i:i + 6] for i in range(0, len(addr_bytes), 6)]) & self.target_set
 
