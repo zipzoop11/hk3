@@ -93,17 +93,17 @@ class dot11intf:
 				intersect = set([addr_bytes[i:i + 6] for i in range(0, len(addr_bytes), 6)]) & self.target_set
 
 				if intersect:
-
+					addrs = list({pkt['Dot11FCS'].addr2, pkt['Dot11FCS'].addr3})
 					output_event = {
 						'type': 'HIT',
 						'body': {
 							'channel': pkt['RadioTap'].ChannelFrequency,
 							'rssi': pkt['RadioTap'].dBm_AntSignal,
 							'bssid': pkt['Dot11Elt'].info.decode('utf-8'),
+							'mac': addrs,
 							'fcs': pkt.fcs
 						}
 					}
-
 					self.pkt_buffer.put(output_event)
 		else:
 			pass
