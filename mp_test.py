@@ -42,8 +42,8 @@ server = multiprocessing.Process(target=bt_server.serve, kwargs=bt_server_args)
 print("Starting ....")
 # hunter.start()
 server.start()
-i = 0
-while i < 600 and run['state']:
+
+while run['state']:
 	while not hunter_queue.empty():
 		msg = hunter_queue.get()
 
@@ -153,7 +153,7 @@ while i < 600 and run['state']:
 		print("[server parent]ACK")
 		server_parent.send(ack(pkt))
 	time.sleep(0.6)
-	i += 1
+
 
 print("AFTER MAIN LOOP")
 for name in interfaces:
