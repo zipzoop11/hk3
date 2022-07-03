@@ -8,21 +8,19 @@ wifi_channels = [1, 6, 11, 14, 2, 7, 3, 8, 4, 12, 9, 5, 10, 13, 36, 38, 40, 42, 
 def load_settings(settings):
 	print("[load_settings]Loading settings {}".format(settings))
 	default_hunter_settings = {
-		'targets': [],
-		'channels': wifi_channels,
-		'subtypes': [4, 8]
+		'TARGETS': [],
+		'CHANNELS': wifi_channels,
+		'SUBTYPES': [4, 8]
 
 	}
 
 	if settings is None:
 		return default_hunter_settings
 
-	loaded_settings = dict()
+	loaded_settings = default_hunter_settings
 	for key in settings:
 		if key in default_hunter_settings:
 			loaded_settings[key] = settings[key]
-		else:
-			loaded_settings[key] = default_hunter_settings[key]
 
 	print("[load_settings]Loaded settings {}".format(loaded_settings))
 	return loaded_settings
