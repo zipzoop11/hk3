@@ -26,25 +26,29 @@ def load_settings(settings):
 	return loaded_settings
 
 
-def ack(pkt):
-	response = {
-		'type': 'ACK',
-		'ack': pkt['seq']
+def execute_command(request, interface):
+	request_action = request.get('ACTION')
+	request_args = request.get('ARGS')
+	request_settings = request.get('SETTINGS')
+	response = ''
+
+	print(f'[execute_command]Got interface: {interface}')
+	print(f'[execute_command]Got ACTION: {request_action}')
+
+	comms_pipe = interface['parent_pipe']
+
+	query = {
+		'REQUEST': request_action,
+		'ARGS': request_args,
+		'SETTINGS': request_settings
 	}
-	response_bytes = json.dumps(response).encode('utf-8')
 
-	return response_bytes
+	comms_pipe.send(query)
 
-# {'COMMAND': 'START', 'ARGS':{'interface_name': 'wlan1'}}
+	if comms_pipe.poll(1):
+		response = comms_pipe.recv()
+
+	return response
 
 
-def parse_command(pkt):
-	if pkt['type'] == 'CONTROL':
-		return {
-			'command': pkt['payload']['COMMAND'],
-			'args': pkt['payload'].get('ARGS'),
-			'settings': load_settings(pkt['payload'].get('SETTINGS'))
-		}
-	else:
-		return False
 
