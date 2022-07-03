@@ -18,9 +18,9 @@ class dot11intf:
 		self.sniffer = AsyncSniffer(prn=self.packet_handler, iface=iface_name, store=False)
 		self.settings = kwargs
 
-		if kwargs.get('targets'):
-			self.target_set, self.target_list = load_targets(kwargs['targets'])
-			self.target_list = kwargs['targets']
+		if kwargs.get('TARGETS'):
+			self.target_set, self.target_list = load_targets(kwargs['TARGETS'])
+			self.target_list = kwargs['TARGETS']
 		else:
 			self.target_set = set()
 			self.target_list = []
@@ -29,8 +29,8 @@ class dot11intf:
 		self.hopper = None
 		self.i = 0
 
-		self.channels = kwargs['channels']
-		self.subtype_filter = set(kwargs['subtypes'])
+		self.channels = kwargs['CHANNELS']
+		self.subtype_filter = set(kwargs['SUBTYPES'])
 
 	def set_interface_mode(self, mode):
 
