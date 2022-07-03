@@ -95,8 +95,8 @@ class dot11intf:
 				if intersect:
 					addrs = list({pkt['Dot11FCS'].addr2, pkt['Dot11FCS'].addr3})
 					output_event = {
-						'type': 'HIT',
-						'body': {
+						'TYPE': 'HIT',
+						'BODY': {
 							'channel': pkt['RadioTap'].ChannelFrequency,
 							'rssi': pkt['RadioTap'].dBm_AntSignal,
 							'bssid': pkt['Dot11Elt'].info.decode('utf-8'),
