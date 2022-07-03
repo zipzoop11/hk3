@@ -29,7 +29,6 @@ class bt_server:
                 pkt = None
 
             if pkt:
-                print(f'[bt_server]Sending {pkt} which is type {type(pkt)}')
                 pkt_bytes = json.dumps(pkt).encode('utf-8')
                 if pkt_bytes[-1] != b'\n':
                     pkt_bytes += b'\n'
