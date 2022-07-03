@@ -84,7 +84,8 @@ class bt_server:
     def stop(self):
         print("Caught stop")
         self.connected = False
-        self.rfcomm_socket.close()
+        if self.rfcomm_socket:
+            self.rfcomm_socket.close()
 
 
 
