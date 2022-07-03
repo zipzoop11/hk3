@@ -70,7 +70,11 @@ while run['state']:
 			command = {'ACTION': None, 'ARGS': {}}
 
 		if not SYN:
-			interface_name = command['ARGS'].get('interface_name')
+			try:
+				interface_name = command['ARGS'].get('interface_name')
+			except KeyError:
+				interface_name = None
+
 			ACTION = command.get('ACTION')
 
 			if ACTION == 'START':
@@ -111,6 +115,14 @@ while run['state']:
 					response['BODY'] = interface_name
 				else:
 					response['BODY'] = f'{interface_name} NOT STARTED'
+			elif ACTION == 'GET_DOT11_INTERFACES':
+				iw_dev = subprocess.Popen(['iw', 'dev'], stdout=PIPE)
+				awk = subprocess.check_output(['awk', '$1=="Interface"{print $2}'], stdin=iw_dev.stdout)
+				ret = iw_dev.wait()
+				if ret == 0:
+					response['BODY'] = [b.decode('utf-8') for b in awk.split(b'\n') if b]
+				else:
+					response['BODY'] = 'GET_DOT11_INTERFACES FAILED'
 			else:
 				if interfaces.get(interface_name):
 					response['BODY'] = execute_command(command, interfaces[interface_name])
@@ -122,12 +134,15 @@ while run['state']:
 
 
 print("AFTER MAIN LOOP")
-for name in interfaces:
-	proc = interfaces[name]['process']
-	print("Stopping interface {}".format(name))
-	proc.terminate()
-	print("Waiting for interface {} to stop".format(name))
-	proc.join()
+try:
+	for name in interfaces:
+		proc = interfaces[name]['process']
+		print("Stopping interface {}".format(name))
+		proc.terminate()
+		print("Waiting for interface {} to stop".format(name))
+		proc.join()
+except TypeError:
+	pass
 
 
 server.terminate()
