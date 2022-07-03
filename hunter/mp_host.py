@@ -32,50 +32,34 @@ def serve(*args, **kwargs):
 			pipe_to_host.put(buf.get())
 		if msg_pipe.poll(0.2):
 			msg = msg_pipe.recv()
-			if msg['type'] == 'REQUEST':
-				if msg['REQUEST'] == 'GET_SETTINGS':
-					response = {
-						'type': 'RESPONSE',
-						'RESPONSE': interface.settings
-					}
-					msg_pipe.send(response)
-				elif msg['REQUEST'] == 'UPDATE_SETTINGS':
-					old_settings = interface.settings
-					requested_settings = msg['BODY']
-					new_settings = dict()
-					try:
-						for key in old_settings:
-							if key in requested_settings:
-								print("UPDATE_SETTINGS updating settings: {} with value {}".format(key, requested_settings[key]))
-								new_settings[key] = requested_settings[key]
-							else:
-								print("UPDATE_SETTINGS keeping old value {} for setting {}".format(old_settings[key], key))
-								new_settings[key] = old_settings[key]
+			request = msg['REQUEST']
+			args = msg['ARGS']
+			settings = msg['SETTINGS']
 
-						print("[mp_host][{0}] Stopping interface {0} in response to 'UPDATE_SETTINGS'".format(run['name']))
-						interface.stop()
-						print("[mp_host][{}]Starting new interface in response to 'UPDATE_SETTINGS'".format(run['name']))
-						interface = dot11intf(kwargs['interface'], buf, **new_settings)
-						interface.start()
+			if request == 'GET_SETTINGS':
+				msg_pipe.send(interface.settings)
+			elif request == 'UPDATE_SETTINGS':
+				old_settings = interface.settings
+				requested_settings = settings
+				new_settings = dict()
 
-						response = {
-							'type': 'RESPONSE',
-							'RESPONSE': new_settings
-						}
-					except TypeError:
-						response = {
-							'type': 'RESPONSE',
-							'RESPONSE': 'BAD_COMMAND'
-						}
+				for key in old_settings:
+					if key in requested_settings:
+						print("UPDATE_SETTINGS updating settings: {} with value {}".format(key, requested_settings[key]))
+						new_settings[key] = requested_settings[key]
+					else:
+						print("UPDATE_SETTINGS keeping old value {} for setting {}".format(old_settings[key], key))
+						new_settings[key] = old_settings[key]
 
-					msg_pipe.send(response)
+				print("[mp_host][{0}] Stopping interface {0} in response to 'UPDATE_SETTINGS'".format(run['name']))
+				interface.stop()
+				print("[mp_host][{}]Starting new interface in response to 'UPDATE_SETTINGS'".format(run['name']))
+				interface = dot11intf(kwargs['interface'], buf, **new_settings)
+				interface.start()
 
-				else:
-					response = {
-						'type': 'RESPONSE',
-						'RESPONSE': 'BAD_COMMAND'
-					}
-					msg_pipe.send(response)
+				msg_pipe.send(interface.settings)
+			else:
+				msg_pipe.send('BAD_COMMAND')
 
 		time.sleep(0.2)
 
