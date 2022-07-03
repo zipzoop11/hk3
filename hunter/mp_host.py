@@ -29,8 +29,7 @@ def serve(*args, **kwargs):
 
 	while run['state']:
 		if not buf.empty():
-			buf_bytes = json.dumps(buf.get()).encode('utf-8')
-			pipe_to_host.put(buf_bytes)
+			pipe_to_host.put(buf.get())
 		if msg_pipe.poll(0.2):
 			msg = msg_pipe.recv()
 			if msg['type'] == 'REQUEST':
