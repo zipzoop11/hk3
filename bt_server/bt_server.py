@@ -2,6 +2,7 @@ import time
 import threading
 import os
 import serial
+import json
 from serial.serialutil import SerialException
 
 
@@ -28,10 +29,12 @@ class bt_server:
                 pkt = None
 
             if pkt:
-                if pkt[-1] != b'\n':
-                    pkt += b'\n'
+                print(f'[bt_server]Sending {pkt} which is type {type(pkt)}')
+                pkt_bytes = json.dumps(pkt).encode('utf-8')
+                if pkt_bytes[-1] != b'\n':
+                    pkt_bytes += b'\n'
                 try:
-                    self.rfcomm_socket.write(pkt)
+                    self.rfcomm_socket.write(pkt_bytes)
                     self.sent += 1
                 except OSError:
                     self.connected = False
