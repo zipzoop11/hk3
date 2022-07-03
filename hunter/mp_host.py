@@ -2,7 +2,6 @@ from .interfaces.dot11 import dot11intf
 import queue
 import time
 import signal
-import json
 
 buf = queue.Queue(maxsize=10)
 out_queue = queue.Queue(maxsize=10)
