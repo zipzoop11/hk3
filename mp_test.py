@@ -37,7 +37,7 @@ bt_server_args = {
 }
 
 server = multiprocessing.Process(target=bt_server.serve, kwargs=bt_server_args)
-
+seen_requests = set()
 
 print("Starting ....")
 # hunter.start()
@@ -51,8 +51,10 @@ while run['state']:
 	if server_parent.poll(0.2):
 		msg = server_parent.recv()
 		pkt = json.loads(msg.decode('utf-8'))
-		SYN = False
+		COMMAND = False
 		request_id = pkt.get('SEQ')
+
+
 		response = {
 			'TYPE': 'RESPONSE',
 			'ACK': request_id
@@ -60,16 +62,22 @@ while run['state']:
 
 		if pkt['TYPE'] == 'SYN':
 			print("GOT A SYN")
-			SYN = True
+			COMMAND = False
 
 		if pkt['TYPE'] == 'REQUEST':
 			print("GOT A REQUEST")
 			command = pkt.get('REQUEST')
-			SYN = False
+			COMMAND = True
 		else:
 			command = {'ACTION': None, 'ARGS': {}}
 
-		if not SYN:
+		if request_id in seen_requests:
+			print(f"We have already seen the request {pkt} before. Ignoring...")
+			COMMAND = False
+		else:
+			seen_requests.add(request_id)
+
+		if COMMAND:
 			try:
 				interface_name = command['ARGS'].get('interface_name')
 			except KeyError:
@@ -127,7 +135,10 @@ while run['state']:
 				if interfaces.get(interface_name):
 					response['BODY'] = execute_command(command, interfaces[interface_name])
 				else:
-					response['BODY'] = f'{interface_name} NOT STARTED'
+					response['BODY'] = {
+						'ERROR': 'NOT_STARTED',
+						'INTERFACE': interface_name
+					}
 
 		server_parent.send(response)
 	time.sleep(0.6)
