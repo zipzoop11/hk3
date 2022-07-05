@@ -128,7 +128,19 @@ while run['state']:
 				awk = subprocess.check_output(['awk', '$1=="Interface"{print $2}'], stdin=iw_dev.stdout)
 				ret = iw_dev.wait()
 				if ret == 0:
-					response['BODY'] = [b.decode('utf-8') for b in awk.split(b'\n') if b]
+					BODY = dict()
+					for i in [b.decode('utf-8') for b in awk.split(b'\n') if b]:
+						if i in interfaces:
+							BODY[i] = {
+								'STATE': 'RUNNING',
+								'SETTINGS': interfaces[i]['settings']
+							}
+						else:
+							BODY[i] = {
+								'STATE': 'NOT_RUNNING',
+								'SETTINGS': {}
+							}
+					response['BODY'] = BODY
 				else:
 					response['BODY'] = 'GET_DOT11_INTERFACES FAILED'
 			else:
