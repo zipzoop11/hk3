@@ -54,7 +54,6 @@ while run['state']:
 		COMMAND = False
 		request_id = pkt.get('SEQ')
 
-
 		response = {
 			'TYPE': 'RESPONSE',
 			'ACK': request_id
@@ -63,6 +62,7 @@ while run['state']:
 		if pkt['TYPE'] == 'SYN':
 			print("GOT A SYN")
 			COMMAND = False
+			seen_requests.clear()
 
 		if pkt['TYPE'] == 'REQUEST':
 			print("GOT A REQUEST")
@@ -74,8 +74,6 @@ while run['state']:
 		if request_id in seen_requests:
 			print(f"We have already seen the request {pkt} before. Ignoring...")
 			COMMAND = False
-		else:
-			seen_requests.add(request_id)
 
 		if COMMAND:
 			try:
@@ -153,6 +151,7 @@ while run['state']:
 					}
 
 		server_parent.send(response)
+		seen_requests.add(request_id)
 	time.sleep(0.6)
 
 
