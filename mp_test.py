@@ -90,7 +90,9 @@ while run['state']:
 					print("Can't start an interface without an interface name!")
 				else:
 					settings = load_settings(command.get('SETTINGS'))
-
+					r = {
+						'INTERFACE_NAME': interface_name
+					}
 					settings['TARGETS'] = targets # Temporarily hardcode targets
 					parent_pipe, child_pipe = multiprocessing.Pipe()
 					interface_kwargs = {
@@ -101,7 +103,7 @@ while run['state']:
 					}
 
 					if interfaces.get(interface_name):
-						settings = interfaces[interface_name]['settings']
+						r['SETTINGS'] = interfaces[interface_name]['settings']
 					else:
 						interfaces[interface_name] = {
 							'process': multiprocessing.Process(target=hunter.serve, kwargs=interface_kwargs),
@@ -109,8 +111,8 @@ while run['state']:
 							'settings': settings
 						}
 						interfaces[interface_name]['process'].start()
-
-					response['BODY'] = settings
+						r['SETTINGS'] = settings
+					response['BODY'] = r
 			elif ACTION == 'STOP':
 
 				if interfaces.get(interface_name):
@@ -118,7 +120,7 @@ while run['state']:
 					process.terminate()
 					process.join()
 
-					response['BODY'] = interface_name
+					response['BODY'] = {'INTERFACE_NAME': interface_name}
 				else:
 					response['BODY'] = f'{interface_name} NOT STARTED'
 			elif ACTION == 'GET_DOT11_INTERFACES':
