@@ -17,6 +17,7 @@ class dot11intf:
 		self.pkt_buffer = pkt_buffer
 		self.sniffer = AsyncSniffer(prn=self.packet_handler, iface=iface_name, store=False)
 		self.settings = kwargs
+		self.passive = False
 
 		if kwargs.get('TARGETS'):
 			self.target_set, self.target_list = load_targets(kwargs['TARGETS'])
@@ -105,8 +106,6 @@ class dot11intf:
 						}
 					}
 					self.pkt_buffer.put(output_event)
-		else:
-			pass
 
 	def start(self, dwell_time=0.5):
 		if self.set_interface_mode('monitor'):

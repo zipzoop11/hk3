@@ -23,6 +23,7 @@ def serve(*args, **kwargs):
 	run['name'] = kwargs['interface']
 	print('[mp_host][{}]Got settings {}'.format(run['name'], kwargs['settings']))
 	interface = dot11intf(kwargs['interface'], buf, **kwargs['settings'])
+	stored_settings = kwargs['settings']
 
 	interface.start()
 
@@ -55,8 +56,20 @@ def serve(*args, **kwargs):
 				print("[mp_host][{}]Starting new interface in response to 'UPDATE_SETTINGS'".format(run['name']))
 				interface = dot11intf(kwargs['interface'], buf, **new_settings)
 				interface.start()
+				stored_settings = new_settings
 
 				msg_pipe.send(interface.settings)
+			elif request == 'GO_PASSIVE':
+				if not interface.passive:
+					print("Got go passive")
+					interface.stop()
+					interface.passive = True
+			elif request == 'GO_ACTIVE':
+				if interface.passive:
+					print("Got go active")
+					interface = dot11intf(kwargs['interface'], buf, **stored_settings)
+					interface.start()
+					interface.passive = False
 			else:
 				msg_pipe.send('BAD_COMMAND')
 

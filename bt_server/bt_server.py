@@ -70,6 +70,10 @@ class bt_server:
 
             self.connected = True
             print("Connected!")
+            GO_ACTIVE = {"TYPE": "SYSTEM_MESSAGE", "REQUEST": {"ACTION": "GO_ACTIVE", "ARGS": {}, "SETTINGS": {}}}
+            GO_ACTIVE_BYTES = json.dumps(GO_ACTIVE).encode('utf-8')
+
+            self.pipe.send(GO_ACTIVE_BYTES)
             return True
         else:
             return False

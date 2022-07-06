@@ -52,6 +52,8 @@ while run['state']:
 		msg = server_parent.recv()
 		pkt = json.loads(msg.decode('utf-8'))
 		COMMAND = False
+		SYSTEM_MESSAGE = False
+		SYN = False
 		request_id = pkt.get('SEQ')
 
 		response = {
@@ -62,14 +64,20 @@ while run['state']:
 		if pkt['TYPE'] == 'SYN':
 			print("GOT A SYN")
 			COMMAND = False
+			SYN = True
 			seen_requests.clear()
 
 		if pkt['TYPE'] == 'REQUEST':
 			print("GOT A REQUEST")
 			command = pkt.get('REQUEST')
 			COMMAND = True
+			SYN = False
 		else:
 			command = {'ACTION': None, 'ARGS': {}}
+
+		if pkt['TYPE'] == 'SYSTEM_MESSAGE':
+			SYSTEM_MESSAGE = True
+			SYN = COMMAND = False
 
 		if request_id in seen_requests:
 			print(f"We have already seen the request {pkt} before. Ignoring...")
@@ -152,8 +160,18 @@ while run['state']:
 						'INTERFACE': interface_name
 					}
 
-		server_parent.send(response)
-		seen_requests.add(request_id)
+		if SYSTEM_MESSAGE:
+			for interface in interfaces:
+				message = pkt['REQUEST']
+				print(f"[SYSTEM_MESSAGE]Sending {message}")
+
+				execute_command(message, interfaces[interface])
+
+		if SYN or COMMAND:
+			COMMAND = False
+			command = {}
+			server_parent.send(response)
+			seen_requests.add(request_id)
 	time.sleep(0.6)
 
 
