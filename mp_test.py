@@ -99,7 +99,6 @@ while run['state']:
 					r = {
 						'INTERFACE_NAME': interface_name
 					}
-					#settings['TARGETS'] = targets # Temporarily hardcode targets
 					parent_pipe, child_pipe = multiprocessing.Pipe()
 					interface_kwargs = {
 						'interface': interface_name,
