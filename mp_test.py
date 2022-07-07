@@ -21,10 +21,8 @@ def SIGINT_HANDLER(*args):
 
 signal.signal(signal.SIGINT, SIGINT_HANDLER)
 
-interface = sys.argv[1]
-rfcomm_device = sys.argv[2]
+rfcomm_device = sys.argv[1]
 
-targets = ['30:23:03:DC:16:E1', '30:23:03:DC:16:E3', '30:23:03:DC:16:E2']
 
 hunter_queue = multiprocessing.Queue()
 server_parent, server_child = multiprocessing.Pipe()
@@ -101,7 +99,7 @@ while run['state']:
 					r = {
 						'INTERFACE_NAME': interface_name
 					}
-					settings['TARGETS'] = targets # Temporarily hardcode targets
+					#settings['TARGETS'] = targets # Temporarily hardcode targets
 					parent_pipe, child_pipe = multiprocessing.Pipe()
 					interface_kwargs = {
 						'interface': interface_name,
