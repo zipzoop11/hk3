@@ -127,6 +127,7 @@ while run['state']:
 					process = interfaces[interface_name]['process']
 					process.terminate()
 					process.join()
+					interfaces.pop(interface_name)
 
 					response['BODY'] = {'INTERFACE_NAME': interface_name}
 				else:
