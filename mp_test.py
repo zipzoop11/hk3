@@ -159,9 +159,11 @@ while run['state']:
 					}
 
 		if SYSTEM_MESSAGE:
+			print(f"[{__name__}]Got SYSTEM MESSAGE {pkt}")
 			for interface in interfaces:
 				message = pkt['REQUEST']
 				print(f"[SYSTEM_MESSAGE]Sending {message}")
+				command = message['ACTION']
 
 				execute_command(message, interfaces[interface])
 
@@ -170,6 +172,22 @@ while run['state']:
 			command = {}
 			server_parent.send(response)
 			seen_requests.add(request_id)
+
+	for i in interfaces:
+		pipe = interfaces[i]['parent_pipe']
+
+		if pipe.poll(0.1):
+			msg = json.loads(pipe.recv())
+
+			if msg:
+				print(f"[{i}]{i} sent: {msg}")
+				if msg['TYPE'] == 'SYSTEM_MESSAGE':
+					req = msg['REQUEST']
+					cmd = msg['REQUEST']['ACTION']
+
+					if cmd == 'NEW_SETTINGS':
+						interfaces[i]['settings'] = req['SETTINGS']
+				
 	time.sleep(0.6)
 
 

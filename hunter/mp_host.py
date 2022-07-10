@@ -2,6 +2,7 @@ from .interfaces.dot11 import dot11intf
 import queue
 import time
 import signal
+import json
 
 buf = queue.Queue(maxsize=10)
 out_queue = queue.Queue(maxsize=10)
@@ -24,7 +25,7 @@ def serve(*args, **kwargs):
 	print('[mp_host][{}]Got settings {}'.format(run['name'], kwargs['settings']))
 	interface = dot11intf(kwargs['interface'], buf, **kwargs['settings'])
 	stored_settings = kwargs['settings']
-
+	name = kwargs['interface']
 	interface.start()
 
 	while run['state']:
@@ -59,6 +60,12 @@ def serve(*args, **kwargs):
 				stored_settings = new_settings
 
 				msg_pipe.send(interface.settings)
+				NEW_SETTINGS = {"TYPE": "SYSTEM_MESSAGE",
+							  "REQUEST": {"ACTION": "NEW_SETTINGS", "ARGS": {'interface_name': name}, "SETTINGS": interface.settings}}
+
+				NEW_SETTINGS_BYTES = json.dumps(NEW_SETTINGS).encode('utf-8')
+				msg_pipe.send(NEW_SETTINGS_BYTES)
+
 			elif request == 'GO_PASSIVE':
 				if not interface.passive:
 					print("Got go passive")
