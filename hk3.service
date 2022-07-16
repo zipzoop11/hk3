@@ -1,0 +1,12 @@
+[Unit]
+Description=hk3 Service
+
+[Service]
+User=root
+WorkingDirectory=/data/hk3
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/data/hk3/hk3.py /dev/rfcomm0
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
