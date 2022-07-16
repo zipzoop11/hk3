@@ -8,6 +8,7 @@ from scapy.error import Scapy_Exception
 from scapy.all import raw
 from ..utils import load_targets
 
+
 PIPE = subprocess.PIPE
 
 class dot11intf:
@@ -18,6 +19,8 @@ class dot11intf:
 		self.sniffer = AsyncSniffer(prn=self.packet_handler, iface=iface_name, store=False)
 		self.settings = kwargs
 		self.passive = False
+		self.pkt_counter = 0
+		self.hit_counter = 0
 
 		if kwargs.get('TARGETS'):
 			self.target_set, self.target_list = load_targets(kwargs['TARGETS'])
@@ -89,11 +92,13 @@ class dot11intf:
 	def packet_handler(self, pkt):
 		time.sleep(0.01)
 		if not self.pkt_buffer.full():
+			self.pkt_counter += 1
 			if pkt.subtype in self.subtype_filter and pkt.type == 0:
 				addr_bytes = raw(pkt)[36:54]
 				intersect = set([addr_bytes[i:i + 6] for i in range(0, len(addr_bytes), 6)]) & self.target_set
 
 				if intersect:
+					self.hit_counter += 1
 					addrs = list({pkt['Dot11FCS'].addr2, pkt['Dot11FCS'].addr3})
 					output_event = {
 						'TYPE': 'HIT',

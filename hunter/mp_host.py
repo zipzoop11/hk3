@@ -3,6 +3,8 @@ import queue
 import time
 import signal
 import json
+import threading
+import subprocess
 
 buf = queue.Queue(maxsize=10)
 out_queue = queue.Queue(maxsize=10)
@@ -16,6 +18,29 @@ def SIGTERM_handler(*args):
 	run['state'] = False
 
 
+def get_status(host_pipe):
+	interface = run['interface']
+	temp = subprocess.check_output(['vcgencmd', 'measure_temp'])
+	temp = temp.decode('utf-8').strip().split('=')[-1]
+	status_message = {
+						'TYPE': 'STATUS',
+						'BODY': {
+							'pps': (interface.pkt_counter/10),
+							'hps': (interface.hit_counter/10),
+							'temp': temp[0:-2],
+							'iface': interface.iface_name
+						}
+					}
+
+	host_pipe.put(status_message)
+	interface.pkt_counter = 0
+	if interface.hit_counter > 0:
+		interface.hit_counter = 0
+
+	run['status_thread'] = threading.Timer(10.0, get_status, args=[host_pipe])
+	run['status_thread'].start()
+
+
 def serve(*args, **kwargs):
 	signal.signal(signal.SIGTERM, SIGTERM_handler)
 
@@ -27,6 +52,9 @@ def serve(*args, **kwargs):
 	stored_settings = kwargs['settings']
 	name = kwargs['interface']
 	interface.start()
+	run['status_thread'] = threading.Timer(10.0, get_status, args=[pipe_to_host])
+	run['status_thread'].start()
+	run['interface'] = interface
 
 	while run['state']:
 		if not buf.empty():
@@ -57,6 +85,7 @@ def serve(*args, **kwargs):
 				print("[mp_host][{}]Starting new interface in response to 'UPDATE_SETTINGS'".format(run['name']))
 				interface = dot11intf(kwargs['interface'], buf, **new_settings)
 				interface.start()
+				run['interface'] = interface
 				stored_settings = new_settings
 
 				msg_pipe.send(interface.settings)
@@ -83,6 +112,7 @@ def serve(*args, **kwargs):
 		time.sleep(0.2)
 
 	interface.stop()
+	run['status_thread'].cancel()
 
 
 
