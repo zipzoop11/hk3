@@ -76,6 +76,14 @@ class dot11intf:
 	def channel_hopper(self, dwell_time=0.5):
 		channels = self.channels.copy()
 		random.shuffle(channels)
+		for ch in channels:
+			set_channel = subprocess.Popen(['iw', 'dev', self.iface_name, 'set', 'channel', str(ch)], stderr=PIPE,
+										   stdout=PIPE)
+			set_channel.wait()
+
+			if set_channel.returncode != 0:
+				print(f"[dot11][{self.iface_name}]Remove channel: {ch}")
+				channels.remove(ch)
 
 		while self.running:
 			for ch in channels:
@@ -85,11 +93,7 @@ class dot11intf:
 				set_channel = subprocess.Popen(['iw', 'dev', self.iface_name, 'set', 'channel', str(ch)], stderr=PIPE, stdout=PIPE)
 				set_channel.wait()
 
-				if set_channel.returncode != 0:
-					channels.remove(ch)
-					print("Removed ch: %d" % ch)
-				else:
-					time.sleep(dwell_time)
+				time.sleep(dwell_time)
 
 		return 0
 
