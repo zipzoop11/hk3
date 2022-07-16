@@ -7,6 +7,7 @@ from scapy.layers.dot11 import Dot11, Dot11FCS
 from scapy.error import Scapy_Exception
 from scapy.all import raw
 from ..utils import load_targets
+import random
 
 
 PIPE = subprocess.PIPE
@@ -72,7 +73,9 @@ class dot11intf:
 			return not channel_change.returncode
 
 	def channel_hopper(self, dwell_time=0.5):
-		channels = self.channels
+		channels = self.channels.copy()
+		random.shuffle(channels)
+
 		while self.running:
 			for ch in channels:
 				if not self.running:
