@@ -12,6 +12,7 @@ import random
 
 PIPE = subprocess.PIPE
 
+
 class dot11intf:
 	def __init__(self, iface_name, pkt_buffer, **kwargs):
 		self.iface_name = iface_name
